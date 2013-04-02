@@ -46,12 +46,19 @@ void *WriteMessage(void* ptr) {
 		return NULL;
 	}
 	Message* write = Message::GetFromMemoryMappedFile(fdwrite);
-	while(1) {
+	int exit = 0;
+	const char* exitStr = "exit";
+	while(exit == 0) {
 		std::string str;
-		getline(std::cin, str);
-	    char *cstr = new char[str.length() + 1];
+		getline(std::cin, str);		
+		char *cstr = new char[str.length() + 1];
 		strcpy(cstr, str.c_str());
-		write->EnqueueMessage(cstr);	
+		if(!strcmp(cstr, exitStr)) {
+			exit = 1;
+		}
+		else {
+			write->EnqueueMessage(cstr);	
+		}
 	}
 
 	Message::ReleaseFile(write, fdwrite);
@@ -109,10 +116,11 @@ int main(int argc, char* argv[]) {
     readThreadresult = pthread_create(&readThread, NULL, &CheckForMessages, (void*)readFromFile);
 	writeThreadresult = pthread_create(&writeThread, NULL, &WriteMessage, (void*)writeToFile);
 
-	pthread_join(readThread, NULL);
+	//pthread_join(readThread, NULL);
 	pthread_join(writeThread, NULL);
 	
 
+	return 0;
     
 	
 }
