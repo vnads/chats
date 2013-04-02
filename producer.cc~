@@ -18,7 +18,8 @@ int main(int argc, char* argv[]) {
         }
 
         
-	
+	Message* write = Message::CopyToMemoryMappedFile(fd1);
+	Message* read = Message::CopyToMemoryMappedFile(fd2);
 
         for(int i = 0; i < 100; i++) {
                 char message[10];
