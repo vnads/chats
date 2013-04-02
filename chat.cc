@@ -32,6 +32,32 @@ void *CheckForMessages(void* ptr) {
     close(fdread);
 }
 
+
+void *WriteMessage(void* ptr) {
+
+	const char *writeFile;
+	writeFile = (char*)ptr;
+	const mode_t mode = 0666;
+	const int openFlags = (O_RDWR);
+	int fdwrite = open(writeFile, openFlags, mode);
+	
+	if(fdwrite == (-1)) {
+		printf("reader open returned (-1)\n");
+		return NULL;
+	}
+	Message* write = Message::GetFromMemoryMappedFile(fdwrite);
+	while(1) {
+		std::string str;
+		getline(std::cin, str);
+	    char *cstr = new char[str.length() + 1];
+		strcpy(cstr, str.c_str());
+		write->EnqueueMessage(cstr);	
+	}
+
+	Message::ReleaseFile(write, fdwrite);
+	close(fdwrite); 
+}
+
 int main(int argc, char* argv[]) {
 	const mode_t mode = 0666;
     const int openFlags = (O_CREAT | O_TRUNC | O_RDWR);
@@ -43,19 +69,29 @@ int main(int argc, char* argv[]) {
 		readFromFile = "shared2.dat";
 		writeToFile = "shared1.dat";
 		
-		//create the read file
+		//create the fileS
 		int fdread = open(readFromFile, openFlags, mode);
+		int fdwrite = open(writeToFile, openFlags, mode);
 	
 		if(fdread == (-1)) {
 			printf("reader open returned (-1)\n");
 			return (-1);
 		}
 
-		Message* read = Message::CopyToMemoryMappedFile(fdread);
-		//now release it
-		Message::ReleaseFile(read, fdread);
 		
-    	close(fdread);
+		if(fdwrite == (-1)) {
+			printf("writer open returned (-1)\n");
+			return (-1);
+		}
+
+		Message* write = Message::CopyToMemoryMappedFile(fdwrite);
+		Message* read = Message::CopyToMemoryMappedFile(fdread);
+
+		Message::ReleaseFile(read, fdread);		
+		close(fdread);
+
+		Message::ReleaseFile(write, fdwrite);
+		close(fdwrite);
 	
 	}
 	else {
@@ -63,31 +99,22 @@ int main(int argc, char* argv[]) {
 		writeToFile = "shared2.dat";
 	}	                    		
 
-	int fdwrite = open(writeToFile, openFlags, mode);
-	if(fdwrite == (-1)) {
-		printf("writer open returned (-1)\n");
-		return (-1);
-	}
-
-	Message* write = Message::CopyToMemoryMappedFile(fdwrite);
 	
-	pthread_t t1;
-	int thread; 
+	
+	pthread_t readThread;
+	int readThreadresult; 
+	pthread_t writeThread;
+	int writeThreadresult;
 
-    thread = pthread_create(&t1, NULL, &CheckForMessages, (void*)readFromFile);
-	//pthread_join(t1, NULL);
+    readThreadresult = pthread_create(&readThread, NULL, &CheckForMessages, (void*)readFromFile);
+	writeThreadresult = pthread_create(&writeThread, NULL, &WriteMessage, (void*)writeToFile);
 
-	while(1) {
-		std::string str;
-		getline(std::cin, str);
-	    char *cstr = new char[str.length() + 1];
-		strcpy(cstr, str.c_str());
-		write->EnqueueMessage(cstr);	
-	}
+	pthread_join(readThread, NULL);
+	pthread_join(writeThread, NULL);
+	
 
     
-	Message::ReleaseFile(write, fdwrite);
-	close(fdwrite);
+	
 }
 
 
