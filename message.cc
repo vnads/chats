@@ -21,8 +21,7 @@ Message::~Message() {
 }
 
 Message *Message::CopyToMemoryMappedFile(int fd) {
-        int datasize = sizeof(Message);
-        printf("message size = %d\n", datasize);
+        int datasize = sizeof(Message);        
         if(lseek(fd, sizeof(Message), SEEK_SET) == (-1)) {
                 fprintf(stderr, "error in lseek\n");
         }

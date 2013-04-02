@@ -1,11 +1,12 @@
-#include "message.hh"
-#include <stdio.h>
-#include <sys/types.h>
-#include <fcntl.h>
-#include <unistd.h>
+#include "message.hh" 
+#include <stdio.h> 
+#include <sys/types.h> 
+#include <fcntl.h> 
+#include <unistd.h> 
+#include <fstream> 
+#include <iostream> 
 #include <pthread.h>
 #include <string.h>
-#include <stdlib.h>
 
 void *CheckForMessages(void* ptr) {
 	Message* msg;
@@ -14,7 +15,7 @@ void *CheckForMessages(void* ptr) {
 	while(1) {
         char *message = msg->DequeueMessage();
         printf("Other Dude: %s", message);
-        fflush(stdout);
+        //fflush(stdout);
     }
 }
 
@@ -32,8 +33,6 @@ int main(int argc, char* argv[]) {
 		const char *writeToFile = "shared1.dat";
 		fdwrite = open(writeToFile, openFlags, mode);
 		fdread = open(readFromFile, openFlags, mode);
-		printf("%d\n", fdwrite);
-		printf("%d\n", fdread);
 		if(fdread == (-1) || fdwrite == (-1)) {
 			printf("open returned (-1) copy\n");
 			return (-1);
@@ -62,8 +61,9 @@ int main(int argc, char* argv[]) {
 	pthread_join(t1, NULL);
 
 	while(1) {
-		const char *msg;
-		cin>>msg;
+		std::string s;
+		getline(std::cin, s);
+		
 	}
 
     Message::ReleaseFile(read, fdread);

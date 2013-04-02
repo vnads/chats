@@ -3,7 +3,7 @@ CC=/usr/bin/g++
 CFLAGS= -g -w -I.
 LINKFLAGS= -g -w
 
-all: chat
+all: clean chat
 
 chat: chat.o message.o
 	$(CC) $(LINKFLAGS) -o chat chat.o message.o -lpthread

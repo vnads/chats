@@ -55,7 +55,7 @@ void Message::ReleaseFile(Message *msg, int fd) {
         }
 }
 
-int Message::EnqueueMessage(const char *msg) {
+void Message::EnqueueMessage(const char *msg) {
         sem_wait(&_full);
         sem_wait(&_lock);
         _current += 1;
